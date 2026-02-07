@@ -23,7 +23,9 @@ enum sensors_t {
     kSensorElectromagnet = 6, 
     kSensorSPARKMotor = 7 
 };
-
+// Sender Module, Receive Module, Sensor Module
+// 1 4 5 
+// ADDR: 0001 1000 1001 
 enum error_t {
     kErrorSuccess = 0, 
     kErrorGeneric = 1, 
