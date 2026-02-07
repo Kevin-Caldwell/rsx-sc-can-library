@@ -2,30 +2,15 @@
 
 #include <cinttypes>
 
-enum module_t {
-    kModuleNone = 0, 
-    kModuleRPi = 1,
-    kModuleGeneral = 2,
-    kModuleOptics = 3,
-    kModuleDrill = 4, 
-    kModuleMotor = 5 
-};
+#include "science_device.h"
 
-enum sensors_t {
-    kSensorNone = 0, 
-    kSensorAll = 1,
-    kSensorUVLED = 2,
-    kSensorServo = 3,
-    kSensorLinearActuator = 4, 
-    kSensorUltrasonic = 5, 
-    kSensorElectromagnet = 6, 
-    kSensorSPARKMotor = 7 
-};
+#if defined(DUMMY)
+#include "dummy.h"
+#else
+#include "CAN.h" 
+#endif
 
-enum error_t {
-    kErrorSuccess = 0, 
-    kErrorGeneric = 1
-};
+namespace Science {
 
 struct ScienceCANMessage {
     int sender_;
@@ -34,14 +19,34 @@ struct ScienceCANMessage {
 
     error_t error_;
 
-#if defined(MODULE_LINEAR_ACTUATOR)
+#if defined(SENSOR_UVLED)
+    bool led_status_;
+#endif
+
+#if defined(SENSOR_SERVO)
+    int turns_;
+#endif
+
+#if defined(SENSOR_LINEAR_ACTUATOR)
     int servo_steps_;
 #endif
 
-    bool led_status_;
-#if defined(MODULE_ULTRASONIC)
+#if defined(SENSOR_ULTRASONIC)
     bool request_distance_;
     uint8_t distance_;
 #endif
 
+#if defined(SENSOR_ELECTROMAGNET)
+    bool active_;
+#endif
+
+#if defined(SPARK_MOTOR) 
+// Undetermined
+#endif
+
 };
+
+void parse_can_message(const can_frame& frame, 
+    ScienceCANMessage* message);
+
+}; // namespace Science
