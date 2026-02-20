@@ -1,16 +1,14 @@
 #pragma once
 
-#include <cinttypes>
+#include <inttypes.h>
 
-#include "science_device.h"
+#include <SPI.h>
+#include <mcp2515.h>
 
-#if defined(DUMMY)
-#include "dummy.h"
-#else
-#include "CAN.h"
-#endif
-
-namespace Science {
+#define SCIENCE_TAG 1
+#define SERVO_SENDER 0
+#define SERVO_RECEIVER 1
+#define SERVO_PERIPHERAL 0
 
 constexpr int CS_PIN = 10;
 
@@ -29,10 +27,13 @@ struct ScienceCANMessage {
     uint8_t data_[8];
 };
 
-void parse_can_message(const can_frame& frame,
+ScienceCANMessage message;
+
+void parse_can_message(const can_frame* frame,
     ScienceCANMessage* message);
 
 void to_can_frame(const ScienceCANMessage* message,
     can_frame* frame);
 
-}; // namespace Science
+
+bool process_can_rx();

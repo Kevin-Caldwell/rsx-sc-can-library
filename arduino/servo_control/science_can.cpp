@@ -1,10 +1,5 @@
 #include "science_can.h"
 
-#include <SPI.h>
-#include <mcp2515.h>
-
-namespace Science {
-
 void can_setup()
 {
   SPI.begin();
@@ -14,10 +9,10 @@ void can_setup()
   Serial.println("MCP2515 init OK YAY! :)");
 }
 
-void parse_can_message(const can_frame& frame,
+void parse_can_message(const can_frame* frame,
     ScienceCANMessage* message)
 {
-  uint32_t can_id = frame.can_id;
+  uint32_t can_id = frame->can_id;
   message->extra_ = can_id & 0xFFF;
   can_id >>= 12;
   message->sensor_ = can_id & 0xF;
@@ -29,11 +24,11 @@ void parse_can_message(const can_frame& frame,
   message->science_ = can_id & 0xF;
   can_id >>= 4;
   message->priority_ = can_id & 0x1;
-  message->dlc_ = frame.can_dlc;
+  message->dlc_ = frame->can_dlc;
 
   #pragma loop unroll 8
   for (int i = 0; i < 8; ++i) {
-    message->data_[i] = frame.data[i];
+    message->data_[i] = frame->data[i];
   }
 }
 
@@ -62,4 +57,21 @@ void to_can_frame(const ScienceCANMessage* message,
   }
 }
 
-}; // namespace Science
+
+bool process_can_rx()
+{
+  struct can_frame can_msg;
+
+  MCP2515::ERROR res = mcp2515.readMessage(&can_msg);
+  if (res != MCP2515::ERROR_NOMSG) {
+    parse_can_message(&can_msg, &message);
+    if (message.science_ == SCIENCE_TAG &&
+        message.sender_ == SERVO_SENDER &&
+        message.receiver_ == SERVO_RECEIVER &&
+        message.sensor_ == SERVO_PERIPHERAL) {
+
+      return true;
+    }
+  }
+  return false;
+}
