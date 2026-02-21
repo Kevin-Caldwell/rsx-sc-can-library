@@ -2,9 +2,7 @@
 
 // #define DUMMY
 
-namespace Science {
-
-enum module_t {
+enum int module_t {
     kModuleNone = 0,
     kModuleRPi = 1,
     kModuleGeneral = 2,
@@ -33,27 +31,3 @@ enum error_t {
     kErrorGeneric = 1,
     kErrorPP = 2,
 };
-
-struct ScienceDevice {
-    uint8_t tag = 0x0;
-    module_t module_index_;
-    module_t senders_[kModuleCount];
-    sensors_t peripherals_[kSensorsCount];
-};
-
-    
-static ScienceDevice optics_device = {
-    .tag = 0x0,
-    .module_index_ = 0x11,
-    .senders = {0, 1, 0, 0, 0, 0},
-    .peripherals_ = {0, 1, 0, 0, 0, 0, 0, 0}};
-
-static ScienceDevice drill_device = {
-    .tag = 0x0,
-    .module_index_ = 0x21,
-    .senders = {0, 1, 0, 0, 0, 0},
-    .peripherals_ = {0, 1, 0, 0, 0, 0, 0, 0}};
-
-static ScienceDevice* active = &optics;
-
-}; // namespace Science
