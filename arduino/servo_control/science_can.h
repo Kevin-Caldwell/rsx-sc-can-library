@@ -16,7 +16,7 @@ MCP2515 mcp2515(CS_PIN);
 
 void can_setup();
 
-struct ScienceCANMessage {
+struct ScienceCANPacket {
     uint8_t priority_;
     uint8_t science_;
     uint8_t sender_;
@@ -27,13 +27,12 @@ struct ScienceCANMessage {
     uint8_t data_[8];
 };
 
-ScienceCANMessage message;
+ScienceCANPacket message;
 
 void parse_can_message(const can_frame* frame,
-    ScienceCANMessage* message);
+    ScienceCANPacket* message);
 
-void to_can_frame(const ScienceCANMessage* message,
+void to_can_frame(const ScienceCANPacket* message,
     can_frame* frame);
-
 
 bool process_can_rx();

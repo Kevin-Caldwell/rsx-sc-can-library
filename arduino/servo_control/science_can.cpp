@@ -9,30 +9,30 @@ void can_setup()
   Serial.println("MCP2515 init OK YAY! :)");
 }
 
-void parse_can_message(const can_frame* frame,
-    ScienceCANMessage* message)
+void assemble_SCP_from_frame(const can_frame* frame,
+    ScienceCANPacket* rsx_sci_pkt)
 {
   uint32_t can_id = frame->can_id;
-  message->extra_ = can_id & 0xFFF;
+  rsx_sci_pkt->extra_ = can_id & 0xFFF;
   can_id >>= 12;
-  message->sensor_ = can_id & 0xF;
+  rsx_sci_pkt->sensor_ = can_id & 0xF;
   can_id >>= 4;
-  message->receiver_ = can_id & 0xF;
+  rsx_sci_pkt->receiver_ = can_id & 0xF;
   can_id >>= 4;
-  message->sender_ = can_id & 0xF;
+  rsx_sci_pkt->sender_ = can_id & 0xF;
   can_id >>= 4;
-  message->science_ = can_id & 0xF;
+  rsx_sci_pkt->science_ = can_id & 0xF;
   can_id >>= 4;
-  message->priority_ = can_id & 0x1;
-  message->dlc_ = frame->can_dlc;
+  rsx_sci_pkt->priority_ = can_id & 0x1;
+  rsx_sci_pkt->dlc_ = frame->can_dlc;
 
   #pragma loop unroll 8
   for (int i = 0; i < 8; ++i) {
-    message->data_[i] = frame->data[i];
+    rsx_sci_pkt->data_[i] = frame->data[i];
   }
 }
 
-void to_can_frame(const ScienceCANMessage* message,
+void assemble_frame_from_SCP(const ScienceCANPacket* message,
     can_frame* frame)
 {
   uint32_t can_id = 0x0;
