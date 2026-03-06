@@ -98,6 +98,8 @@ def assemble_frame_from_SCP(rsx_sci_pkt: ScienceCanPacket, can_frame: can.Messag
 
     can_frame.dlc = rsx_sci_pkt.dlc 
 
+    can_frame.is_extended_id = True
+
     return 1
     
 def process_can_rx():
