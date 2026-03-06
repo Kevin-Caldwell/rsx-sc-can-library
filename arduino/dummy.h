@@ -1,4 +1,4 @@
-// Copied from 
+// Copied from
 // https://github.com/autowp/arduino-mcp2515/blob/master/can.h#L9
 
 
