@@ -106,5 +106,7 @@ def assemble_frame_from_SCP(rsx_sci_pkt: ScienceCanPacket):
 
     return can_frame
     
-def process_can_rx():
+def process_can_rx(rsx_sci_pkt: ScienceCanPacket):
+    # Check to see if receiver is RPi
+    # Keep message and let it keep going if it is, toss it if it isnt 
     return "bruh"
