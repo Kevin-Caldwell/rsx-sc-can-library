@@ -12,3 +12,7 @@ BUS = initialize_bus()
 can_msg = BUS.recv()
 
 print(can_msg)
+
+pulse_pkg = assemble_SCP_from_frame(can_frame=can_msg)
+
+print()

@@ -7,7 +7,7 @@ from CAN_utilities import *
 class CAN_Recv():
     """
     (None)
-
+    
     This class represents an instance of the CAN_Recv that connects to CAN bus and reads messages
     from it. The read messages are published onto the topics.
     """

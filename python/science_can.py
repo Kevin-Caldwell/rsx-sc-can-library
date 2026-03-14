@@ -74,7 +74,8 @@ def assemble_SCP_from_frame(can_frame: can.Message, rsx_sci_pkt: ScienceCanPacke
     # Fill the RSX_Sci packet with data received 
     for i in range (can_frame.dlc):
         rsx_sci_pkt.data[i] = can_frame.data[i]
-    return 1
+    
+    return can_frame
 
 def assemble_frame_from_SCP(rsx_sci_pkt: ScienceCanPacket):
 

@@ -54,8 +54,9 @@ class ScienceCanPacket:
     def parse_CAN_msg(msg):
         print("we comrade")
 
-def assemble_SCP_from_frame(can_frame: can.Message, rsx_sci_pkt: ScienceCanPacket):
+def assemble_SCP_from_frame(can_frame: can.Message):
     # Fill the RSX_Sci packet with information from the CAN frame address
+    rsx_sci_pkt = ScienceCanPacket()
     can_id  = can_frame.arbitration_id
     rsx_sci_pkt.extra  = can_id & 0xFFF
     can_id = can_id >> 12
@@ -75,7 +76,7 @@ def assemble_SCP_from_frame(can_frame: can.Message, rsx_sci_pkt: ScienceCanPacke
     # Fill the RSX_Sci packet with data received 
     for i in range (can_frame.dlc):
         rsx_sci_pkt.data[i] = can_frame.data[i]
-    return 1
+    return rsx_sci_pkt
 
 def assemble_frame_from_SCP(rsx_sci_pkt: ScienceCanPacket):
 
