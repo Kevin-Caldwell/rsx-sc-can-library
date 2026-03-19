@@ -2,7 +2,7 @@
 
 // #define DUMMY
 
-enum int module_t {
+enum module_t : int {
     kModuleNone = 0,
     kModuleRPi = 1,
     kModuleGeneral = 2,
@@ -12,7 +12,7 @@ enum int module_t {
     kModuleCount
 };
 
-enum sensors_t {
+enum sensors_t : int{
     kSensorNone = 0,
     kSensorAll = 1,
     kSensorUVLED = 2,
