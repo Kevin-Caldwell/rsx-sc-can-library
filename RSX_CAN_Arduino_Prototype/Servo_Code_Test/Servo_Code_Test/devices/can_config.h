@@ -1,5 +1,5 @@
 #include "science_device.h"
-#include <cstdint>
+#include <stdint.h>
 
 constexpr uint32_t SCIENCE_TAG = 0x0;
 constexpr uint32_t CAN_MODULE = 0x1;
