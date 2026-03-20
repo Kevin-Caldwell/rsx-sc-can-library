@@ -1,0 +1,5 @@
+- [ ] Send and Recv between both modules with CAN ID filters
+- [ ] Make more robust filters / Include filters in send_tx and recv_tx() code
+- [ ] Test Circular Buffer
+- [ ] Finalize final tasks
+- [ ] Make CAN jokes at Abhay
