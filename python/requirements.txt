@@ -1,4 +1,4 @@
 python-can 
 numpy 
-rospy
-std_msgs
+# rospy
+# std_msgs

@@ -2,8 +2,8 @@
 # Able to be recieved by arduino 
 
 import can
-from python.science_can import *
-from python.CAN_utilities import initialize_bus
+from science_can import *
+from CAN_utilities import initialize_bus
 # from CAN_utilities import generate_can_id, initialize_bus, CMD_API_NONRIO_HB
 
 # Instantiate CAN bus
@@ -14,10 +14,10 @@ pulse_pkg = ScienceCanPacket()
 
 pulse_pkg.priority = 0
 pulse_pkg.science = 0
-pulse_pkg.sender = SCI_MODULE_RPI
-pulse_pkg.receiver = SCI_MODULE_DRILL
-pulse_pkg.sensor = SCI_SENSOR_SERVO
-pulse_pkg.extra = SCI_ERROR_SUCCESS
+pulse_pkg.sender = Module.SCI_RPI
+pulse_pkg.receiver = Module.SCI_DRILL
+pulse_pkg.sensor = Sensor.SCI_SERVO
+pulse_pkg.extra = Error.SCI_SUCCESS
 pulse_pkg.dlc = 8
 pulse_pkg.data = bytes([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF])
 

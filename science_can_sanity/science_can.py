@@ -8,28 +8,31 @@ import can
 from CAN_utilities import *
 # from science_can import *
 
-# Types of modules
-SCI_MODULE_NONE = 0 # No type
-SCI_MODULE_RPI = 1 # Raspberry Pi 5 
-SCI_MODULE_GENERAL = 2 # Arduino Nano
-SCI_MODULE_OPTICS = 3 # Arduino Nano
-SCI_MODULE_DRILL = 4 # Arduino Nano
-SCI_MODULE_MOTOR = 5 # Arduino Nano
+class Module(Enum):
 
-# Types of sensors 
-SCI_SENSOR_NONE = 0 
-SCI_SENSOR_ALL = 1
-SCI_SENSOR_UVLED = 2
-SCI_SENSOR_SERVO = 3
-SCI_SENSOR_LINEAR_ACTUATOR = 4 
-SCI_SENSOR_ULTRASONIC = 5
-SCI_SENSOR_ELECTROMAGNET = 6
-SCI_SENSOR_SPARK_MOTOR = 7 
+    SCI_NONE = 0 # No type
+    SCI_RPI = 1 # Raspberry Pi 5 
+    SCI_GENERAL = 2 # Arduino Nano
+    SCI_OPTICS = 3 # Arduino Nano
+    SCI_DRILL = 4 # Arduino Nano
+    SCI_MOTOR = 5 # Arduino Nano
 
-# Types of errors 
-SCI_ERROR_SUCCESS = 0 # No Error 
-SCI_ERROR_GENERIC = 1 # General Error Msg 
-SCI_ERROR_PP = 2
+class Sensor(Enum):
+    # Types of sensors 
+    SCI_NONE = 0 
+    SCI_ALL = 1
+    SCI_UVLED = 2
+    SCI_SERVO = 3
+    SCI_LINEAR_ACTUATOR = 4 
+    SCI_ULTRASONIC = 5
+    SCI_ELECTROMAGNET = 6
+    SCI_SPARK_MOTOR = 7 
+
+class Error(Enum):
+    # Types of errors 
+    SCI_SUCCESS = 0 # No Error 
+    SCI_GENERIC = 1 # General Error Msg 
+    SCI_PP = 2
 
 class ScienceCanPacket:
     priority: int = 0
@@ -106,6 +109,18 @@ def assemble_frame_from_SCP(rsx_sci_pkt: ScienceCanPacket):
     can_frame.is_extended_id = True
 
     return can_frame
+
+
+# SCI_MODULE_NONE = 0 # No type
+# SCI_MODULE_RPI = 1 # Raspberry Pi 5 
+# SCI_MODULE_GENERAL = 2 # Arduino Nano
+# SCI_MODULE_OPTICS = 3 # Arduino Nano
+# SCI_MODULE_DRILL = 4 # Arduino Nano
+# SCI_MODULE_MOTOR = 5 # Arduino Nano
+
+def get_module_name(module_id):
+    print(module_id)
+    return module_id
     
 def process_can_rx(rsx_sci_pkt: ScienceCanPacket):
     # Check to see if receiver is RPi
