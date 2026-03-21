@@ -117,10 +117,6 @@ def assemble_frame_from_SCP(rsx_sci_pkt: ScienceCanPacket):
 # SCI_MODULE_OPTICS = 3 # Arduino Nano
 # SCI_MODULE_DRILL = 4 # Arduino Nano
 # SCI_MODULE_MOTOR = 5 # Arduino Nano
-
-def get_module_name(module_id):
-    print(module_id)
-    return module_id
     
 def process_can_rx(rsx_sci_pkt: ScienceCanPacket):
     # Check to see if receiver is RPi
