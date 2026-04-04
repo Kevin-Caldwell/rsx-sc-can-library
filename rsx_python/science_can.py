@@ -147,6 +147,8 @@ def process_ROS_topic(ros_topic):
     rsx_scp.extra = ros_topic.extra
     rsx_scp.dlc = ros_topic.data_length
     rsx_scp.data = ros_topic.data_content
+
+    return rsx_scp
     
     
 def process_can_rx():
