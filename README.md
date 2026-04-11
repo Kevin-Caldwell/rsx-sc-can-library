@@ -20,7 +20,7 @@ To install and use the `RSX_Arduino` package, follow these steps:
 	- **macOS:** `/Users/{username}/Documents/Arduino`
 	- **Linux:** `/home/{username}/Arduino`
  3. To use in a sketch (`ino` file), go to "Sketch >> Include Library >> `science_can`", and it should add the appropriate header file to your sketch. If this does not happen, try restarting the Arduino IDE. 
- 4. GO NUTS
+ 4. Have fun! Use the functions you need to send your own CAN messages! 
 
 ## Python
 
