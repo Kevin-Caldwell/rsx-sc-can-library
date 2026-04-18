@@ -13,7 +13,7 @@ import can
 # from rclpy.node import Node
 # from std_msgs.msg import String
 
-from rsx_science_can_lib.rsx_python.CAN_utilities import *
+from ares_can_lib.rsx_python.CAN_utilities import *
 
 # Types of modules
 SCI_MODULE_NONE = 0 # No type
