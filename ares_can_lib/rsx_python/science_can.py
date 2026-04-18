@@ -56,7 +56,7 @@ class ScienceCanPacket:
         print("RSX Science CAN Packet Data!")
         print("----------------------------")
         print (f"Priority: {self.priority}")
-        print (f"RSX_Science_Tag: {self.science}")
+        print (f"Is_Part_of_Multipacket: {bool(self.multipacket_id)}")
         print (f"Sender_Module: {self.sender}")
         print (f"Receiver_Module: {self.receiver}")
         print (f"Sensor: {self.sensor}")
@@ -77,6 +77,9 @@ class ScienceCanPacket:
     # Returns sensor of the SCP
     def fetch_sensor(self):
         return self.sensor
+    
+    def fetch_multipacket_id(self):
+        return self.multipacket_id
 
 def assemble_SCP_from_frame(can_frame: can.Message, rsx_sci_pkt: ScienceCanPacket):
     # Fill the RSX_Sci packet with information from the CAN frame address
@@ -89,7 +92,7 @@ def assemble_SCP_from_frame(can_frame: can.Message, rsx_sci_pkt: ScienceCanPacke
     can_id = can_id >> 4
     rsx_sci_pkt.sender     = can_id & 0xF
     can_id = can_id >> 4
-    rsx_sci_pkt.science     = can_id & 0xF
+    rsx_sci_pkt.multipacket_id     = can_id & 0xF
     can_id = can_id >> 4
     rsx_sci_pkt.priority     = can_id & 0x1
 
@@ -111,7 +114,7 @@ def assemble_frame_from_SCP(rsx_sci_pkt: ScienceCanPacket):
     # Populate can_id with info from RSX_Sci packet
     can_id |= rsx_sci_pkt.priority & 0x1
     can_id = can_id << 4
-    can_id |= rsx_sci_pkt.science & 0xF
+    can_id |= rsx_sci_pkt.multipacket_id & 0xF
     can_id = can_id << 4
     can_id |= rsx_sci_pkt.sender & 0xF
     can_id = can_id << 4
@@ -149,7 +152,7 @@ def process_ROS_topic(ros_topic):
 
     # Fill with info from ros_topic
     rsx_scp.priority = ros_topic.priority
-    rsx_scp.science = SCIENCE_CAN_TAG
+    rsx_scp.multipacket_id = 12345 #TODO: ASSIGN APPROPRIATE ID TO MULTIPACKET DATA
     rsx_scp.sender = SCI_MODULE_RPI  # Sender will always be RPi, it sends every ros_msg to CAN network
     rsx_scp.receiver = ros_topic.receiver
     rsx_scp.sensor = ros_topic.sensor
@@ -166,7 +169,7 @@ def ROS_STR_to_CAN_sanity(ros_str):
 
     # Fill SCP with sample info from ros_topic
     rsx_scp.priority = 0
-    rsx_scp.science = SCIENCE_CAN_TAG
+    rsx_scp.multipacket_id = 0 # Single packet by default
     rsx_scp.sender = SCI_MODULE_RPI  # Sender will always be RPi, it sends every ros_msg to CAN network
     rsx_scp.receiver = SCI_MODULE_DRILL
     rsx_scp.sensor = SCI_SENSOR_SERVO
