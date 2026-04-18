@@ -6,8 +6,8 @@
 - [ ] Finalize final tasks
 - [x] Make CAN jokes at Abhay
 - [x] Move a servo
-- [ ] Move servo with imported packages
-- [ ] Read a sensor value
+- [x] Move servo with imported packages
+- [x] Read a sensor value
 - [ ] Move data spread over 3 CAN Packets
 - [ ] Bitbang 10 bit ADC signal from Mulispectral camera
 
@@ -16,4 +16,4 @@
 - [x] High Level Structure of CAN library
 - [x] Package Arduino code into importable package
 - [x] Package Python code into importable package
-- [ ] Rave in our victory 
+- [ ] Rave in our victory
