@@ -32,11 +32,19 @@ SCI_PERIPHERAL_LINEAR_ACTUATOR = 4
 SCI_PERIPHERAL_ULTRASONIC = 5
 SCI_PERIPHERAL_ELECTROMAGNET = 6
 SCI_PERIPHERAL_SPARK_MOTOR = 7
+SCI_PERIPHERAL_MULTISPECTRAL = 8
 
 # Types of errors
 SCI_ERROR_SUCCESS = 0 # No Error
 SCI_ERROR_GENERIC = 1 # General Error Msg
 SCI_ERROR_PP = 2
+
+# Available slots for large multi-packet datasets
+AVAILABLE_MULT_PKT_SLOTS = list(range(1, 16))
+ACTIVE_MULT_PKT_SLOTS = []
+
+# Spectrometer Packet Size 
+SPEC_PACKET_SIZE = 144
 
 class ScienceCanPacket:
     priority: int = 0
@@ -80,8 +88,45 @@ class ScienceCanPacket:
 
     def fetch_multipacket_id(self):
         return self.multipacket_id
+    
+    def celebrate(self):
+        print("YAYYYY! WE DID IT! THIS IS AWESOME!!!")
 
-def assemble_SCP_from_frame(can_frame: can.Message, rsx_sci_pkt: ScienceCanPacket):
+# Buffer lists for incoming and outgoing CAN messages 
+RX_BUFFER = []
+TX_BUFFER = []
+MULTIPACKET_BUFFER = [] # Appends to RX_BUFFER once ENTIRE large dataset has been received
+
+def assign_available_slot():
+    # Find next available multipacket slot
+    res = AVAILABLE_MULT_PKT_SLOTS[0]
+
+    # Remove from available list and add to active list
+    AVAILABLE_MULT_PKT_SLOTS.remove(res)
+    ACTIVE_MULT_PKT_SLOTS.append(res)
+
+    # Return the slot for use
+    return res
+
+def free_available_slot(free_slot):
+
+    # Remove from available list and add to active list
+    AVAILABLE_MULT_PKT_SLOTS.append(free_slot)
+    ACTIVE_MULT_PKT_SLOTS.remove(free_slot)
+
+def multi_packet_manager(scp_msg):
+    mid = scp_msg.multipacket_id
+    index = scp_msg.extra
+
+    MULTIPACKET_BUFFER[mid][index] = scp_msg
+
+    if len(MULTIPACKET_BUFFER[mid]) == SPEC_PACKET_SIZE:
+        RX_BUFFER.append(MULTIPACKET_BUFFER[mid])
+        MULTIPACKET_BUFFER.remove(MULTIPACKET_BUFFER[mid])
+        free_available_slot(mid)
+
+def assemble_SCP_from_frame(can_frame: can.Message):
+    rsx_sci_pkt = ScienceCanPacket()
     # Fill the RSX_Sci packet with information from the CAN frame address
     can_id  = can_frame.arbitration_id
     rsx_sci_pkt.extra  = can_id & 0xFFF
@@ -103,7 +148,7 @@ def assemble_SCP_from_frame(can_frame: can.Message, rsx_sci_pkt: ScienceCanPacke
     for i in range (can_frame.dlc):
         rsx_sci_pkt.data[i] = can_frame.data[i]
 
-    return can_frame
+    return rsx_sci_pkt
 
 def assemble_frame_from_SCP(rsx_sci_pkt: ScienceCanPacket):
 
@@ -134,6 +179,29 @@ def assemble_frame_from_SCP(rsx_sci_pkt: ScienceCanPacket):
 
     return can_frame
 
+def process_rx(can_bus):
+    for i in range (32):
+        can_msg = can_bus.recv(0.01)
+        if can_msg != None:
+            new_scp = assemble_SCP_from_frame(can_msg)
+            if new_scp.receiver == SCI_MODULE_RPI:
+                if new_scp.multipacket_id == 0:
+                    RX_BUFFER.append(new_scp)
+                else:
+                    multi_packet_manager(new_scp)
+        else:
+            break   
+    return i  
+
+def process_tx(can_bus):
+    for msg in TX_BUFFER:
+        assemble_frame_from_SCP(msg)
+        try:
+            can_bus.send(msg=msg, timeout=0.1)
+        except TimeoutError:
+            print("ERROR: MESSAGE DID NOT SEND PROPERLY")
+        TX_BUFFER.remove(msg)
+
 # Reads from ROS topic data, fills and returns an SCP with information to be sent
 def process_ROS_topic(ros_topic):
 
@@ -151,8 +219,13 @@ def process_ROS_topic(ros_topic):
     '''
 
     # Fill with info from ros_topic
-    rsx_scp.priority = ros_topic.priority
-    rsx_scp.multipacket_id = 12345 #TODO: ASSIGN APPROPRIATE ID TO MULTIPACKET DATA
+    # rsx_scp.priority = ros_topic.priority
+
+    if ros_topic.peripheral == SCI_PERIPHERAL_MULTISPECTRAL:
+        rsx_scp.multipacket_id = assign_available_slot() # Assign next available multipacket ID to request
+    else:
+        rsx_scp.multipacket_id = 0
+
     rsx_scp.sender = SCI_MODULE_RPI  # Sender will always be RPi, it sends every ros_msg to CAN network
     rsx_scp.receiver = ros_topic.receiver
     rsx_scp.peripheral = ros_topic.peripheral
@@ -178,6 +251,3 @@ def ROS_STR_to_CAN_sanity(ros_str):
     rsx_scp.data = ros_str
 
     return rsx_scp
-
-def process_can_rx():
-    return "bruh"
