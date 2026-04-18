@@ -38,12 +38,11 @@ SCI_ERROR_SUCCESS = 0 # No Error
 SCI_ERROR_GENERIC = 1 # General Error Msg
 SCI_ERROR_PP = 2
 
-# The science CAN tag denoting our specific CAN network
-SCIENCE_CAN_TAG = 314
-
 class ScienceCanPacket:
     priority: int = 0
-    science: int = 0
+    # multipacket_id: Identifies whether CAN msg is part of a larger multi-packet piece of data, 
+    # or if its a standalone. 0 if normal CAN msg, ID of the big data packet if otherwise 
+    multipacket_id: int = 0 
     sender: int = 0
     receiver: int = 0
     sensor: int = 0
