@@ -1,6 +1,6 @@
 # Welcome to Ares CAN Library!
 
-Hi! This is the custom CAN communication library for RSX Science, written by Kevin Caldwell and Vhea He (2026). Ares is the Greek god of War, and is another name for Mars, the Red Planet our rover is designed to explore. The library is designed to facilitate CAN message transmission between a Raspberry Pi 4/5 and multiple Arduino Nano based modules over a central CAN Bus. It contains two major packages to be installed: `RSX_Arduino` and `RSX_Python`.
+Hi! This is the custom CAN communication library for RSX Science, written by Kevin Caldwell and Vhea He (2026). Our library is named after Ares, the Greek god of War. Ares is another name for Mars, the Red Planet our rover is designed to explore. The library is designed to facilitate CAN message transmission between a Raspberry Pi 4/5 and multiple Arduino Nano based modules over a central CAN Bus. It contains two major packages to be installed: `RSX_Arduino` and `RSX_Python`.
 
 The Controller Area Network (CAN) is a standardized communication protocol that enables microcontrollers and devices to communicate with each other in real-time without needing a host computer. Designed for reliability and efficiency, it ensures seamless communication in critical systems. This was chosen for the rover for its modular and reliable properties. Read more about CAN [here](https://unstop.com/blog/what-is-can-protocol).
 
