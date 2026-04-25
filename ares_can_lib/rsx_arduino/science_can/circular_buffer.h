@@ -55,6 +55,11 @@ public:
     return head_ == tail_;
   }
 
+  inline bool full() const
+  {
+    return tail_ - head_ >= N;
+  }
+
 private:
   const uint32_t kMask = N - 1;
   uint32_t head_;
