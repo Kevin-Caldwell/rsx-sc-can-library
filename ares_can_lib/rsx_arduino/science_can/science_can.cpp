@@ -12,12 +12,13 @@ constexpr int kMaxMultiPacket = 15;
 constexpr int kFrameIndexBits = 12;
 constexpr int kMaxLength = (1 << (kFrameIndexBits + 1));
 constexpr int kOneShotLength = 8; // 8 Bytes
+constexpr int kMaxStoredPacket = 2;
 
 struct ResourceState {
   // Data
   uint8_t* base_;
   uint8_t* pos_;
-  int32_t len_;
+  uint16_t len_;
 
   // CAN
   module_t other_; // Sender / Receiver
@@ -33,7 +34,7 @@ public:
   ResourceTable()
   {
     begin_ = &arr_[0];
-    end_ = &arr_[kMaxMultiPacket];
+    end_ = &arr_[kMaxStoredPacket];
   }
 
   ResourceState* alloc(const uint8_t* base,
@@ -113,11 +114,19 @@ public:
     return message;
   }
 
-  void setNextCAN(const int frame_index,
-    const int )
+  void setNextCAN(ScienceCANMessage message)
+  {
+    const int frame_index = message.multipacket_id_;
+    ResourceState* resource = get(frame_index);
+    uint8_t* ptr = resource->base_ + message.extra_ * 2;
+    for (int i = 0; i < message.dlc_; ++i) {
+      *ptr++ = message.data_[i];
+    }
+
+  }
 
 private:
-  ResourceState arr_[kMaxMultiPacket];
+  ResourceState arr_[kMaxStoredPacket];
   const ResourceState* begin_;
   const ResourceState* end_;
 
@@ -238,7 +247,7 @@ int process_rx() {
       if (~buf.multipacket_id_) {
         rx_buffer.push(buf);
       } else {
-        MPM::send_table.alloc()
+        // MPM::send_table.alloc();
       }
       recv++;
     }

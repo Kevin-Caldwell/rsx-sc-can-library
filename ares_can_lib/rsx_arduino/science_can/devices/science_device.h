@@ -2,7 +2,7 @@
 
 // #define DUMMY
 
-enum module_t {
+enum module_t : uint8_t {
     kModuleNone = 0,
     kModuleRPi = 1,
     kModuleGeneral = 2,
@@ -12,7 +12,7 @@ enum module_t {
     kModuleCount
 };
 
-enum peripherals_t {
+enum peripherals_t : uint8_t {
     kPeripheralNone = 0,
     kPeripheralAll = 1,
     kPeripheralUVLED = 2,
@@ -27,7 +27,7 @@ enum peripherals_t {
 // Sender Module, Receive Module, Peripheral Module
 // 1 4 5
 // ADDR: 0001 1000 1001
-enum error_t {
+enum error_t : uint8_t {
     kErrorSuccess = 0,
     kErrorGeneric = 1,
     kErrorPP = 2,
