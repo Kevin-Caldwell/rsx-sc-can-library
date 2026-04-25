@@ -33,10 +33,10 @@ To use this library, follow these steps:
  3. Run your python script as a module in order to use the functions in the library. You can run a sample test with the command: `python3 -m functional_tests.servo_spin_test.send_cmd`.
  4. Have fun! Use the functions you need to send your own CAN messages!
 
-### Ur Mom
-Your mother would be proud of all you accomplished. By using this library, you CAN do anything!
-
 ## Usage
 
 The Ares library uses a ScienceCANPacket as an intermediate layer
 with fields representing the different parts of
+
+### Ur Mom
+Your mother would be proud of all you accomplished. By using this library, you CAN do anything!
