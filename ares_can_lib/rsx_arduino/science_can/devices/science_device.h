@@ -9,6 +9,8 @@ enum module_t : uint8_t {
     kModuleOptics = 3,
     kModuleDrill = 4,
     kModuleMotor = 5,
+    kModuleMultispectral = 6,
+    kModuleChem = 7,
     kModuleCount
 };
 
@@ -16,12 +18,12 @@ enum peripherals_t : uint8_t {
     kPeripheralNone = 0,
     kPeripheralAll = 1,
     kPeripheralUVLED = 2,
-    kPeripheralServo = 3,
-    kPeripheralLinearActuator = 4,
-    kPeripheralUltrasonic = 5,
-    kPeripheralElectromagnet = 6,
-    kPeripheralSPARKMotor = 7,
-    kPeripheralMultiSpectral = 8,
+    kPeripheralBlueLED = 3,
+    kPeripheralServo = 4,
+    kPeripheralLinearActuator = 5,
+    kPeripheralUltrasonic = 6,
+    kPeripheralElectromagnet = 7,
+    kPeripheralSPARKMotor = 8,
     kPeripheralCount
 };
 // Sender Module, Receive Module, Peripheral Module
