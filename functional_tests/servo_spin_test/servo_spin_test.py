@@ -24,7 +24,6 @@ pulse = assemble_frame_from_SCP(rsx_sci_pkt=pulse_pkg)
 import time
 while (True):
     pulse_pkg.data = bytes([(pulse_pkg.data[0] + 1) % 18, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF])
-    pulse = assemble_frame_from_SCP(rsx_sci_pkt=pulse_pkg)
-    TX_BUFFER.append(pulse)
+    TX_BUFFER.append(pulse_pkg)
     process_tx(BUS)
     time.sleep(1)
