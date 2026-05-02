@@ -89,7 +89,7 @@ class ScienceCanPacket:
         print (f"Extra_Bits: {self.extra}")
         print (f"Data_Lenth: {self.dlc}")
         print("----------------------------")
-        print (f"Data_Content: {uint16(self.data)}")
+        print (f"Data_Content: {np.uint16(self.data)}")
         print("============================")
 
     # Returns receiver of the SCP
