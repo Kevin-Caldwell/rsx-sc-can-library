@@ -50,4 +50,17 @@ int process_rx();
 
 int process_tx();
 
+namespace MPM {
+struct BufferInfo
+{
+  uint8_t* base_;
+  uint8_t len_;
+  uint8_t available;
+};
+
+extern BufferInfo sample_extraction_buffer;
+
+} // namespace MPM
+
+
 }; // namespace Science
