@@ -7,11 +7,9 @@ from ares_can_lib.rsx_python.CAN_utilities import initialize_bus
 # Instantiate CAN bus
 BUS = initialize_bus()
 
-# Example ScienceCanPacket to store
-msg_received = ScienceCanPacket()
-
 import time
 while (True):
+    msg_received = ScienceCanPacket()
     process_rx(BUS)
     if RX_BUFFER == []:
         continue
