@@ -27,10 +27,15 @@ struct ResourceState {
   peripherals_t peripheral_;
 
   // Table
+#if !defined(STRIPPED_CAN)
   bool available_;
+#endif
   uint8_t mapped_index_;
 };
 
+#if defined(STRIPPED_MPM)
+static ResourceState send_table;
+#else
 struct ResourceTable {
 public:
   ResourceTable()
@@ -136,6 +141,8 @@ private:
 };
 
 static ResourceTable send_table;
+#endif
+
 bool queue_send = false;
 int frame = -1;
 
@@ -267,9 +274,13 @@ int process_tx() {
   if (MPM::queue_send) {
     if (MPM::sample_extraction_buffer.available) {
       MPM::queue_send = false;
+#if defined(STRIPPED_MPM)
+  MPM::send_table.available_ =
+#else
       MPM::send_table.alloc(MPM::sample_extraction_buffer.base_,
         MPM::sample_extraction_buffer.len_,
         MPM::frame);
+#endif
     }
   }
 
