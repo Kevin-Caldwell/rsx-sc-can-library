@@ -79,9 +79,7 @@ class ScienceCanPacket:
 
         # Prints the values of data in the Science Can Packet (SCP) as uint16 
     def print_processed_pkt(self, immediate=True):
-        for data in self.data:
-            if data == None:
-                self.data.pop(data)
+        filtered_data = remove_items(self.data)
         print("======================================")
         print("Processed RSX Science CAN Packet Data!")
         print("--------------------------------------")
@@ -92,7 +90,7 @@ class ScienceCanPacket:
         print (f"Extra_Bits: {self.extra}")
         print (f"Data_Lenth: {self.dlc}")
         print("----------------------------")
-        print (f"Data_Content: {np.uint16(self.data)}")
+        print (f"Data_Content: {np.uint16(filtered_data)}")
         print("============================")
 
     # Returns receiver of the SCP
@@ -272,3 +270,11 @@ def ROS_STR_to_CAN_sanity(ros_str):
     rsx_scp.data = ros_str
 
     return rsx_scp
+
+# Helper function to remove all unwanted values from data for filtration purposes
+def remove_items(test_list, item):
+    # remove the item for all its occurrences
+    c = test_list.count(item)
+    for i in range(c):
+        test_list.remove(item)
+    return test_list
