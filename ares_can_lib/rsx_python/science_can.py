@@ -14,6 +14,7 @@ import can
 # from std_msgs.msg import String
 
 from ares_can_lib.rsx_python.CAN_utilities import *
+import numpy as np
 
 # Types of modules
 SCI_MODULE_NONE = 0 # No type
@@ -73,7 +74,22 @@ class ScienceCanPacket:
         print (f"Extra_Bits: {self.extra}")
         print (f"Data_Lenth: {self.dlc}")
         print("----------------------------")
-        print (f"Data_Content: {self.data}")
+        print (f"Data_Content: {np.uint16(self.data)}")
+        print("============================")
+
+        # Prints the values of data in the Science Can Packet (SCP) as uint16 
+    def print_processed_pkt(self, immediate=True):
+        print("======================================")
+        print("Processed RSX Science CAN Packet Data!")
+        print("--------------------------------------")
+        print (f"Is_Part_of_Multipacket: {bool(self.multipacket_id)}")
+        print (f"Sender_Module: {self.sender}")
+        print (f"Receiver_Module: {self.receiver}")
+        print (f"Peripheral: {self.peripheral}")
+        print (f"Extra_Bits: {self.extra}")
+        print (f"Data_Lenth: {self.dlc}")
+        print("----------------------------")
+        print (f"Data_Content: {uint16(self.data)}")
         print("============================")
 
     # Returns receiver of the SCP

@@ -23,6 +23,6 @@ while (True):
                 print("we can't really deal with that sorry")
             else:
                 print(f"Length of RX_BUFFER: {len(RX_BUFFER)}")
-                msg_received.print_pkt()
+                msg_received.print_processed_pkt()
 
         RX_BUFFER.clear()
