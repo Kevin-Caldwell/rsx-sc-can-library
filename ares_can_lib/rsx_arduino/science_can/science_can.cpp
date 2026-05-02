@@ -27,10 +27,15 @@ struct ResourceState {
   peripherals_t peripheral_;
 
   // Table
+#if !defined(STRIPPED_CAN)
   bool available_;
+#endif
   uint8_t mapped_index_;
 };
 
+#if defined(STRIPPED_MPM)
+static ResourceState send_table;
+#else
 struct ResourceTable {
 public:
   ResourceTable()
@@ -136,6 +141,8 @@ private:
 };
 
 static ResourceTable send_table;
+#endif
+
 bool queue_send = false;
 int frame = -1;
 
@@ -168,7 +175,9 @@ void parse_can_message(const can_frame& frame,
   message->priority_ = can_id & 0x1;
   message->dlc_ = frame.can_dlc;
 
+#if !defined(STRIPPED_CAN)
 #pragma loop unroll 8
+#endif
   for (int i = 0; i < 8; ++i) {
     message->data_[i] = frame.data[i];
   }
@@ -192,7 +201,9 @@ void to_can_frame(const ScienceCANMessage* message,
   frame->can_id = can_id;
   frame->can_dlc = message->dlc_;
 
+#if !defined(STRIPPED_CAN)
 #pragma loop unroll 8
+#endif
   for (int i = 0; i < 8; ++i) {
     frame->data[i] = message->data_[i];
   }
@@ -263,9 +274,16 @@ int process_tx() {
   if (MPM::queue_send) {
     if (MPM::sample_extraction_buffer.available) {
       MPM::queue_send = false;
+#if defined(STRIPPED_MPM)
+      MPM::send_table.base_ = MPM::sample_extraction_buffer.base_;
+      MPM::send_table.pos_ = MPM::sample_extraction_buffer.base_;
+      MPM::send_table.len_ = MPM::sample_extraction_buffer.len_;
+      MPM::send_table.mapped_index_ = MPM::frame;
+#else
       MPM::send_table.alloc(MPM::sample_extraction_buffer.base_,
         MPM::sample_extraction_buffer.len_,
         MPM::frame);
+#endif
     }
   }
 

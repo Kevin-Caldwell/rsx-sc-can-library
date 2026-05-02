@@ -8,13 +8,15 @@
 #include "devices/science_device.h"
 #include "circular_buffer.h"
 
-#define PRINT_ALL_CAN // Switch to print all CAN Messages
-#define PRINT_FILTERED_CAN
+// #define PRINT_ALL_CAN // Switch to print all CAN Messages
+// #define PRINT_FILTERED_CAN
+#define STRIPPED_MPM
+#define STRIPPED_CAN
 
 namespace Science {
 
 constexpr int CS_PIN = 10;
-const int MAX_RX = 32;
+constexpr int MAX_RX = 32;
 
 extern MCP2515 mcp2515;
 
