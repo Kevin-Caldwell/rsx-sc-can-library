@@ -2,8 +2,8 @@
 
 - [x] Send and Recv between both modules with CAN ID filters
 - [x] Make more robust filters / Include filters in send_tx and recv_tx() code
-- [ ] Test Circular Buffer
-- [ ] Finalize final tasks
+- [x] Test Circular Buffer
+- [x] Finalize final tasks
 - [x] Make CAN jokes at Abhay
 - [x] Move a servo
 - [x] Move servo with imported packages
@@ -17,3 +17,6 @@
 - [x] Package Arduino code into importable package
 - [x] Package Python code into importable package
 - [ ] Rave in our victory
+
+# Fine Grained TODOs
+- [ ] Ultrasonic Sensor should report values periodically

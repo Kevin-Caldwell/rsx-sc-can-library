@@ -12,7 +12,9 @@ constexpr int kMaxMultiPacket = 15;
 constexpr int kFrameIndexBits = 12;
 constexpr int kMaxLength = (1 << (kFrameIndexBits + 1));
 constexpr int kOneShotLength = 8; // 8 Bytes
-constexpr int kMaxStoredPacket = 2;
+constexpr int kMaxStoredPacket = 1;
+
+static BufferInfo sample_extraction_buffer;
 
 struct ResourceState {
   // Data
@@ -51,6 +53,7 @@ public:
       resource++;
     }
     assert(resource != end_ && "Table full");
+    resource->available_ = 0;
     return resource;
   }
 
@@ -133,7 +136,8 @@ private:
 };
 
 static ResourceTable send_table;
-static ResourceTable recv_table;
+bool queue_send = false;
+int frame = -1;
 
 }
 
@@ -194,7 +198,6 @@ void to_can_frame(const ScienceCANMessage* message,
   }
 }
 
-
 // POTATERS ARE YUMMY
 
 int process_rx() {
@@ -247,7 +250,8 @@ int process_rx() {
       if (~buf.multipacket_id_) {
         rx_buffer.push(buf);
       } else {
-        // MPM::send_table.alloc();
+        MPM::queue_send = true;
+        MPM::frame = buf.multipacket_id_;
       }
       recv++;
     }
@@ -256,10 +260,16 @@ int process_rx() {
 }
 
 int process_tx() {
+  if (MPM::queue_send) {
+    if (MPM::sample_extraction_buffer.available) {
+      MPM::queue_send = false;
+      MPM::send_table.alloc(MPM::sample_extraction_buffer.base_,
+        MPM::sample_extraction_buffer.len_,
+        MPM::frame);
+    }
+  }
 
   int cnt = 0;
-
-
 
   while (!tx_buffer.empty()) {
     const ScienceCANMessage buf = tx_buffer.last();

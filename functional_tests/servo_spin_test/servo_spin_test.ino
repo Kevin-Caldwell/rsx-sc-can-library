@@ -12,7 +12,10 @@ Servo rightAngleServo;
 // SO to Pin 12
 // CS to 10
 
+module_t CAN_MODULE = kModuleDrill;
+
 void setup() {
+  
   Serial.begin(115200);
 
 
