@@ -80,6 +80,7 @@ class ScienceCanPacket:
         # Prints the values of data in the Science Can Packet (SCP) as uint16 
     def print_processed_pkt(self, immediate=True):
         filtered_data = remove_items(self.data, None)
+        filtered_data = convert_to_uint16(filtered_data)
         print("======================================")
         print("Processed RSX Science CAN Packet Data!")
         print("--------------------------------------")
@@ -278,3 +279,8 @@ def remove_items(test_list, item):
     for i in range(c):
         test_list.remove(item)
     return test_list
+
+def convert_to_uint16(data):
+    arr = np.array(data, dtype=np.uint8)
+    reinterpreted = arr.view(np.uint16)
+    return reinterpreted
