@@ -168,7 +168,9 @@ void parse_can_message(const can_frame& frame,
   message->priority_ = can_id & 0x1;
   message->dlc_ = frame.can_dlc;
 
+#if !defined(STRIPPED_CAN)
 #pragma loop unroll 8
+#endif
   for (int i = 0; i < 8; ++i) {
     message->data_[i] = frame.data[i];
   }
@@ -192,7 +194,9 @@ void to_can_frame(const ScienceCANMessage* message,
   frame->can_id = can_id;
   frame->can_dlc = message->dlc_;
 
+#if !defined(STRIPPED_CAN)
 #pragma loop unroll 8
+#endif
   for (int i = 0; i < 8; ++i) {
     frame->data[i] = message->data_[i];
   }
