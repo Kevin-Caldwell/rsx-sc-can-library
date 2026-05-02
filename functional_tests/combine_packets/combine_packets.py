@@ -25,12 +25,19 @@ process_tx(BUS)
 import time
 while (True):
     # We are in the loop!
-    '''
-    can_pkt = BUS.read(can_packet)
-    turn into SCP 
-    toss SCP into process rx 
-    
-    '''
+    msg_received = ScienceCanPacket()
+    process_rx(BUS)
+    if RX_BUFFER == []:
+        continue
+    else:
+        print(RX_BUFFER)
+        for msg in RX_BUFFER:
+            msg_received = msg
+            if type(msg_received) == list:
+                print("we can't really deal with that sorry")
+            else:
+                print(f"Length of RX_BUFFER: {len(RX_BUFFER)}")
+                msg_received.print_processed_pkt()
     # pulse_pkg.data = bytes([(pulse_pkg.data[0] + 1) % 18, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF])
     # pulse = assemble_frame_from_SCP(rsx_sci_pkt=pulse_pkg)
     # task = BUS.send(pulse)

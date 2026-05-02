@@ -145,6 +145,14 @@ def multi_packet_manager(scp_msg):
         MULTIPACKET_BUFFER.remove(MULTIPACKET_BUFFER[mid])
         free_available_slot(mid)
 
+# Takes in a list of scp packets part of the same multipacket message and combines them
+def combine_multipacket_data(scp_list):
+    combined_data = []
+    for scp in scp_list:
+        combined_data = combined_data.append(scp.data)
+
+    return combined_data
+
 def assemble_SCP_from_frame(can_frame: can.Message):
     rsx_sci_pkt = ScienceCanPacket()
     # Fill the RSX_Sci packet with information from the CAN frame address
