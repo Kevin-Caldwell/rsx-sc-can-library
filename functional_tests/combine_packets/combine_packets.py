@@ -34,7 +34,9 @@ while (True):
         for msg in RX_BUFFER:
             msg_received = msg
             if type(msg_received) == list:
-                print("we can't really deal with that sorry")
+                msg_received[0].print_pkt()
+                combined_data = combine_multipacket_data(msg_received)
+                print(f"All Multipacket Data: {combined_data}")
             else:
                 print(f"Length of RX_BUFFER: {len(RX_BUFFER)}")
                 msg_received.print_processed_pkt()
