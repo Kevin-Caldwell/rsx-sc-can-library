@@ -45,16 +45,11 @@ public:
     const uint16_t len,
     const int frame_index)
   {
-    assert(len < kMaxLength &&
-      "Trying to allocate longer than Max Length");
-    assert(frame_index < kMaxMultiPacket &&
-      "More frames than possible to allocate");
 
     ResourceState* resource = begin_;
     while (resource->available_ == 1 && resource != end_) {
       resource++;
     }
-    assert(resource != end_ && "Table full");
     resource->available_ = 0;
     resource->base_ = base;
     resource->pos_ = base;
@@ -90,7 +85,6 @@ public:
       counter < kMaxStoredPacket) {
       counter++;
     }
-    // assert(resource != end_ && "Frame not found");
     return &arr_[counter];
   }
 
