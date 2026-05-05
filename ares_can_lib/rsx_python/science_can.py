@@ -158,7 +158,7 @@ def multi_packet_manager(scp_msg):
 def combine_multipacket_data(scp_list):
     combined_data = []
     for scp in scp_list:
-        combined_data = combined_data.append(scp.data)
+        combined_data.append(scp.data)
 
     return combined_data
 

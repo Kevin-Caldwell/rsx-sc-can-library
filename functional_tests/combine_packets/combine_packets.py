@@ -42,7 +42,7 @@ while (True):
             msg_received = msg
             if type(msg_received) == list:
                 msg_received[0].print_pkt()
-                combine_multipacket_data(msg_received)
+                combined_data = combine_multipacket_data(msg_received)
                 print(f"All Multipacket Data: {combined_data}")
             else:
                 print(f"Length of RX_BUFFER: {len(RX_BUFFER)}")
