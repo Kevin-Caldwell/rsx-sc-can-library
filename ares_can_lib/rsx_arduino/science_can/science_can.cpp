@@ -27,7 +27,7 @@ struct ResourceState {
   peripherals_t peripheral_;
 
   // Table
-#if !defined(STRIPPED_CAN)
+#if defined(STRIPPED_CAN)
   bool available_;
 #endif
   uint8_t mapped_index_;
@@ -36,6 +36,9 @@ struct ResourceState {
 #if defined(STRIPPED_MPM)
 static ResourceState send_table;
 #else
+
+bool run_mpm = false;
+int recv;
 struct ResourceTable {
 public:
   ResourceTable()
@@ -45,7 +48,7 @@ public:
   }
 
   ResourceState* alloc(const uint8_t* base,
-    const uint8_t len,
+    const uint16_t len,
     const int frame_index)
   {
     assert(len < kMaxLength &&
@@ -54,24 +57,32 @@ public:
       "More frames than possible to allocate");
 
     ResourceState* resource = begin_;
-    while (resource->available_ == 0 && resource != end_) {
+    while (resource->available_ == 1 && resource != end_) {
       resource++;
     }
     assert(resource != end_ && "Table full");
     resource->available_ = 0;
+    resource->base_ = base;
+    resource->pos_ = base;
+    resource->len_ = len;
+    resource->other_ = MPM::recv;
+    Serial.println("ALLOCED");
     return resource;
   }
 
   int free(const int frame_index)
   {
-    assert(frame_index < kMaxMultiPacket &&
-      "Trying to access out of bounds frame");
+    // assert(frame_index < kMaxMultiPacket &&
+      // "Trying to access out of bounds frame");
 
     ResourceState* resource = begin_;
-    while(resource->mapped_index_ != frame_index && resource != end_) {
+    int cnt = 0;
+    while(begin_[cnt].mapped_index_ != frame_index && resource != end_) {
       resource++;
+      cnt++;
     }
-    assert(resource != end_ && "Frame not found");
+    resource = &begin_[cnt];
+    // assert(resource != end_ && "Frame not found");
 
     resource->base_ = nullptr;
     resource->len_ = 0;
@@ -85,24 +96,28 @@ public:
 
   ResourceState* get(const int frame_index)
   {
-    assert(frame_index < kMaxMultiPacket &&
-      "Trying to access out of bounds frame");
 
+    int counter = 0;
     ResourceState* resource = begin_;
-    while (resource->mapped_index_ != frame_index && resource != end_) {
+    while (arr_[counter].mapped_index_ != frame_index &&
+      counter < kMaxStoredPacket &&
+      counter < 32) {
+
       resource++;
+      counter++;
     }
-    assert(resource != end_ && "Frame not found");
-    return resource;
+    // assert(resource != end_ && "Frame not found");
+    return &arr_[counter];
   }
 
   // Called by Sender
   ScienceCANMessage getNextCAN(const int frame_index)
   {
     ResourceState* resource = get(frame_index);
+    Serial.println(reinterpret_cast<int>(resource));
     ScienceCANMessage message;
 
-    const int sent_progress = resource->pos_ - resource->base_;
+    const int sent_progress = reinterpret_cast<int>(resource->pos_) - reinterpret_cast<int>(resource->base_);
     const int remaining = resource->len_ - sent_progress;
     message.priority_ = 1;
     message.multipacket_id_ = frame_index;
@@ -113,11 +128,20 @@ public:
     if (remaining) {
       message.extra_ = sent_progress / 8;
       for (int i = 0; i < message.dlc_; ++i) {
-        message.data_[i] = resource->pos_++;
+        message.data_[i] = resource->pos_[i];
       }
+      resource->pos_ += message.dlc_;
     } else {
       message.extra_ = -1; // Send END signal
+      free(frame_index);
+      Science::MPM::sample_extraction_buffer.available = true;
+      run_mpm = false;
     }
+
+    Serial.print(" Sent Progress: ");
+    Serial.print(sent_progress);
+    Serial.print(" REMAINING: ");
+    Serial.print(remaining);
 
     return message;
   }
@@ -133,6 +157,13 @@ public:
 
   }
 
+  void init()
+  {
+    for (int i = 0; i < kMaxStoredPacket; ++i) {
+      arr_[i].available_ = 1;
+    }
+  }
+
 private:
   ResourceState arr_[kMaxStoredPacket];
   const ResourceState* begin_;
@@ -141,6 +172,7 @@ private:
 };
 
 static ResourceTable send_table;
+
 #endif
 
 bool queue_send = false;
@@ -157,6 +189,7 @@ void can_setup() {
   SPI.begin();
   mcp2515.reset();
   Serial.println("MCP2515 init OK YAY! :)");
+  MPM::send_table.init();
 }
 
 void parse_can_message(const can_frame& frame,
@@ -221,6 +254,7 @@ int process_rx() {
     if (res == MCP2515::ERROR_NOMSG || res == MCP2515::ERROR_FAIL) {
       break;
     }
+    Serial.println("PROCESS RX");
 
 #if defined(PRINT_ALL_CAN)
     Serial.print("ID: ");
@@ -241,6 +275,8 @@ int process_rx() {
       Serial.println("Received CAN message:");
       Serial.print("Priority: ");
       Serial.println(buf.priority_, HEX);
+      Serial.print("MCP Index: ");
+      Serial.println(buf.multipacket_id_, HEX);
       Serial.print("Sender: ");
       Serial.println(buf.sender_, HEX);
       Serial.print("Receiver: ");
@@ -258,11 +294,13 @@ int process_rx() {
       }
       Serial.println("\n End CAN Message.");
 #endif
-      if (~buf.multipacket_id_) {
+      if (buf.multipacket_id_ == 0) {
         rx_buffer.push(buf);
       } else {
+        Serial.println("MCP Request received.");
         MPM::queue_send = true;
         MPM::frame = buf.multipacket_id_;
+        MPM::recv = buf.sender_;
       }
       recv++;
     }
@@ -274,16 +312,31 @@ int process_tx() {
   if (MPM::queue_send) {
     if (MPM::sample_extraction_buffer.available) {
       MPM::queue_send = false;
-#if defined(STRIPPED_MPM)
-      MPM::send_table.base_ = MPM::sample_extraction_buffer.base_;
-      MPM::send_table.pos_ = MPM::sample_extraction_buffer.base_;
-      MPM::send_table.len_ = MPM::sample_extraction_buffer.len_;
-      MPM::send_table.mapped_index_ = MPM::frame;
-#else
       MPM::send_table.alloc(MPM::sample_extraction_buffer.base_,
         MPM::sample_extraction_buffer.len_,
         MPM::frame);
+      MPM::run_mpm = true;
+      MPM::sample_extraction_buffer.available = false;
+    }
 #endif
+  }
+  if (MPM::run_mpm) {
+    while (!tx_buffer.full()) {
+      ScienceCANMessage c =
+        MPM::send_table.getNextCAN(MPM::frame);
+      if (c.extra_ == 65535) {
+        break;
+      }
+      Serial.print(" Extra: ");
+      Serial.print(c.extra_, HEX);
+      Serial.print(" DLC: ");
+      Serial.print(c.dlc_, HEX);
+      Serial.print(" Data: ");
+      for (int i = 0; i < c.dlc_; i++) {
+        Serial.print(c.data_[i], HEX);
+        Serial.print(", ");
+      }
+      tx_buffer.push(c);
     }
   }
 

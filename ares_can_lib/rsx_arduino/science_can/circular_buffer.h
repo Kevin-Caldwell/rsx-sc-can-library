@@ -5,7 +5,7 @@
 
 #define WRAP(val) ((val) & (kMask))
 
-template<class T, uint32_t N = 32>
+template<class T, uint32_t N = 16>
 class CircularBuffer {
 public:
   CircularBuffer()
@@ -22,7 +22,7 @@ public:
   inline int push(const T& val)
   {
     buffer_[WRAP(head_++)] = val;
-    return tail_ - head_ + 1 < N;
+    return head_ - tail_ + 1 < N;
   }
 
   inline T& pop()
@@ -47,7 +47,7 @@ public:
 
   inline int elements() const
   {
-    return tail_ - head_ + 1;
+    return head_ - tail_ + 1;
   }
 
   inline bool empty() const
@@ -57,7 +57,7 @@ public:
 
   inline bool full() const
   {
-    return tail_ - head_ >= N;
+    return head_ - tail_ + 1 >= N;
   }
 
 private:

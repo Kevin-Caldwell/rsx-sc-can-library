@@ -8,9 +8,9 @@
 #include "devices/science_device.h"
 #include "circular_buffer.h"
 
-// #define PRINT_ALL_CAN // Switch to print all CAN Messages
-// #define PRINT_FILTERED_CAN
-#define STRIPPED_MPM
+#define PRINT_ALL_CAN // Switch to print all CAN Messages
+#define PRINT_FILTERED_CAN
+// #define STRIPPED_MPM
 #define STRIPPED_CAN
 
 namespace Science {
@@ -37,7 +37,7 @@ struct ScienceCANMessage {
     uint8_t data_[8];
 };
 
-using CANBuffer = CircularBuffer<ScienceCANMessage, 32>;
+using CANBuffer = CircularBuffer<ScienceCANMessage, 8>;
 
 extern CANBuffer rx_buffer;
 extern CANBuffer tx_buffer;
@@ -56,7 +56,7 @@ namespace MPM {
 struct BufferInfo
 {
   uint8_t* base_;
-  uint8_t len_;
+  uint16_t len_;
   uint8_t available;
 };
 
