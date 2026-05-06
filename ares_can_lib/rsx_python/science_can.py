@@ -43,13 +43,12 @@ SCI_ERROR_SUCCESS = 0 # No Error
 SCI_ERROR_GENERIC = 1 # General Error Msg
 SCI_ERROR_PP = 2
 
-# Available slots for large multi-packet datasets
+# Important Constants 
 AVAILABLE_MULT_PKT_SLOTS = list(range(1, 16))
 ACTIVE_MULT_PKT_SLOTS = []
-MAX_MULTIPACKETS = 17
-
-# Spectrometer Packet Size 
-SPEC_PACKET_SIZE = 72
+MAX_MULTIPACKETS = 17 # Maximum number of multipacket sets that can be represented 
+SPEC_PACKET_SIZE = 72 # Spectrometer Packet Size 
+END_PACKET_CODE = 65535 # Denotes the end of a multipacket set
 
 class ScienceCanPacket:
     priority: int = 0
@@ -144,17 +143,23 @@ def free_available_slot(free_slot):
     if free_slot in ACTIVE_MULT_PKT_SLOTS:
         ACTIVE_MULT_PKT_SLOTS.remove(free_slot)
 
+def print_mpkt(scp_list):
+    for scp in scp_list:
+        print(f"Index: {scp.extra} || Data: {scp.data}")
+        print("----------------------------------------")
+
 def multi_packet_manager(scp_msg):
     cpy = copy.deepcopy(scp_msg)
     mid = cpy.multipacket_id
     index = cpy.extra
 
-    MULTIPACKET_BUFFER[mid][index] = cpy
-
-    if len(MULTIPACKET_BUFFER[mid]) == SPEC_PACKET_SIZE:
+    if cpy.extra == END_PACKET_CODE:
         RX_BUFFER.append(MULTIPACKET_BUFFER[mid])
         MULTIPACKET_BUFFER.remove(MULTIPACKET_BUFFER[mid])
         free_available_slot(mid)
+        return 
+
+    MULTIPACKET_BUFFER[mid][index] = cpy
 
 # Takes in a list of scp packets part of the same multipacket message and combines them
 def combine_multipacket_data(scp_list):
