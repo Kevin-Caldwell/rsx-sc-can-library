@@ -43,12 +43,12 @@ SCI_ERROR_SUCCESS = 0 # No Error
 SCI_ERROR_GENERIC = 1 # General Error Msg
 SCI_ERROR_PP = 2
 
-# Important Constants 
+# Important Constants
 AVAILABLE_MULT_PKT_SLOTS = list(range(1, 16))
 ACTIVE_MULT_PKT_SLOTS = []
-MAX_MULTIPACKETS = 17 # Maximum number of multipacket sets that can be represented 
-SPEC_PACKET_SIZE = 72 # Spectrometer Packet Size 
-END_PACKET_CODE = 65535 # Denotes the end of a multipacket set
+MAX_MULTIPACKETS = 17 # Maximum number of multipacket sets that can be represented
+SPEC_PACKET_SIZE = 72 # Spectrometer Packet Size
+END_PACKET_CODE = 4095 # Denotes the end of a multipacket set
 
 class ScienceCanPacket:
     priority: int = 0
@@ -60,7 +60,11 @@ class ScienceCanPacket:
     peripheral: int = 0
     extra: int = 0
     dlc: int = 0
-    data = [None, None, None, None, None, None, None, None]
+    data: list[bytes]
+
+    def __init__(self):
+        # for i in range(8):
+        self.data = [None, None, None, None, None, None, None, None]
 
     # Prints the raw values of everything in the Science Can Packet (SCP)
     def print_pkt(self, immediate=True):
@@ -78,7 +82,7 @@ class ScienceCanPacket:
         print (f"Data_Content: {self.data}")
         print("============================")
 
-        # Prints the values of data in the Science Can Packet (SCP) as uint16 
+        # Prints the values of data in the Science Can Packet (SCP) as uint16
     def print_processed_pkt(self, immediate=True):
         filtered_data = remove_items(self.data, None)
         filtered_data = convert_to_uint16(filtered_data)
@@ -109,11 +113,11 @@ class ScienceCanPacket:
 
     def fetch_multipacket_id(self):
         return self.multipacket_id
-    
+
     def celebrate(self):
         print("YAYYYY! WE DID IT! THIS IS AWESOME!!!")
 
-# Buffer lists for incoming and outgoing CAN messages 
+# Buffer lists for incoming and outgoing CAN messages
 RX_BUFFER = []
 TX_BUFFER = []
 MULTIPACKET_BUFFER = [] # Appends to RX_BUFFER once ENTIRE large dataset has been received
@@ -145,21 +149,39 @@ def free_available_slot(free_slot):
 
 def print_mpkt(scp_list):
     for scp in scp_list:
+        # print(scp)
+        # print(id(scp.data))
         print(f"Index: {scp.extra} || Data: {scp.data}")
-        print("----------------------------------------")
+    print("----------------------------------------")
 
 def multi_packet_manager(scp_msg):
     cpy = copy.deepcopy(scp_msg)
     mid = cpy.multipacket_id
     index = cpy.extra
+    print("EXTRA: ", cpy.extra)
+    print("MID: ", cpy.multipacket_id)
+
+
 
     if cpy.extra == END_PACKET_CODE:
+        print_mpkt(MULTIPACKET_BUFFER[mid])
         RX_BUFFER.append(MULTIPACKET_BUFFER[mid])
         MULTIPACKET_BUFFER.remove(MULTIPACKET_BUFFER[mid])
         free_available_slot(mid)
-        return 
+
+        return
+    # MULTIPACKET_BUFFER[mid][index].priority = cpy.priority
+    # MULTIPACKET_BUFFER[mid][index].multipacket_id = cpy.multipacket_id
+    # MULTIPACKET_BUFFER[mid][index].sender = cpy.sender
+    # MULTIPACKET_BUFFER[mid][index].receiver = cpy.receiver
+    # MULTIPACKET_BUFFER[mid][index].peripheral = cpy.peripheral
+    # MULTIPACKET_BUFFER[mid][index].extra = cpy.extra
+    # MULTIPACKET_BUFFER[mid][index].dlc = cpy.dlc
+    # for i in range(8):
+    #     MULTIPACKET_BUFFER[mid][index].data[i] = cpy.data[i]
 
     MULTIPACKET_BUFFER[mid][index] = cpy
+    print_mpkt(MULTIPACKET_BUFFER[mid])
 
 # Takes in a list of scp packets part of the same multipacket message and combines them
 def combine_multipacket_data(scp_list):
@@ -234,8 +256,8 @@ def process_rx(can_bus):
                 else:
                     multi_packet_manager(new_scp)
         else:
-            break   
-    return i  
+            break
+    return i
 
 def process_tx(can_bus):
     for msg in TX_BUFFER:

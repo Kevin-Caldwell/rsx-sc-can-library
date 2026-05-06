@@ -11,7 +11,7 @@
 #define PRINT_ALL_CAN // Switch to print all CAN Messages
 #define PRINT_FILTERED_CAN
 // #define STRIPPED_MPM
-// #define DEBUG_MPM
+#define DEBUG_MPM
 // #define STRIPPED_CAN
 
 namespace Science {

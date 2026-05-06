@@ -329,10 +329,11 @@ int process_tx() {
     while (!tx_buffer.full()) {
       const ScienceCANMessage c =
         MPM::send_table.getNextCAN(MPM::frame);
+      tx_buffer.push(c);
       if (c.extra_ == 65535) {
+        Serial.println("ENDING FRAME");
         break;
       }
-      tx_buffer.push(c);
     }
   }
 
