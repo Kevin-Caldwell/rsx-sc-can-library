@@ -28,12 +28,12 @@ while (True):
     msg_received = ScienceCanPacket()
     process_rx(BUS)
 
-    if MULTIPACKET_BUFFER == []:
-        continue
-    else:
-        for scp_set in MULTIPACKET_BUFFER:
-            for scp in scp_set:
-                scp.print_pkt()
+    # if MULTIPACKET_BUFFER == []:
+    #     continue
+    # else:
+    #     for scp_set in MULTIPACKET_BUFFER:
+    #         for scp in scp_set:
+    #             scp.print_pkt()
     if RX_BUFFER == []:
         continue
     else:

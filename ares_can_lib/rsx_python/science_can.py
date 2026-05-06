@@ -9,6 +9,7 @@
 # 2026/26 edition
 
 import can
+import copy
 # import rclpy
 # from rclpy.node import Node
 # from std_msgs.msg import String
@@ -121,8 +122,8 @@ MULTIPACKET_BUFFER = [] # Appends to RX_BUFFER once ENTIRE large dataset has bee
 for i in range (MAX_MULTIPACKETS):
     MULTIPACKET_BUFFER.append([])
     for j in range (SPEC_PACKET_SIZE):
-        # placeholder_scp = ScienceCanPacket()
-        MULTIPACKET_BUFFER[i].append(ScienceCanPacket())
+        placeholder_scp = ScienceCanPacket()
+        MULTIPACKET_BUFFER[i].append(placeholder_scp)
 
 def assign_available_slot():
     # Find next available multipacket slot
@@ -144,10 +145,11 @@ def free_available_slot(free_slot):
         ACTIVE_MULT_PKT_SLOTS.remove(free_slot)
 
 def multi_packet_manager(scp_msg):
-    mid = scp_msg.multipacket_id
-    index = scp_msg.extra
+    cpy = copy.deepcopy(scp_msg)
+    mid = cpy.multipacket_id
+    index = cpy.extra
 
-    MULTIPACKET_BUFFER[mid][index] = scp_msg
+    MULTIPACKET_BUFFER[mid][index] = cpy
 
     if len(MULTIPACKET_BUFFER[mid]) == SPEC_PACKET_SIZE:
         RX_BUFFER.append(MULTIPACKET_BUFFER[mid])
