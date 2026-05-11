@@ -31,6 +31,7 @@ while (True):
     if RX_BUFFER == []:
         continue
     else:
+        end = 0
         print(RX_BUFFER)
         for msg in RX_BUFFER:
             msg_received = msg
@@ -38,10 +39,14 @@ while (True):
                 msg_received[0].print_pkt()
                 combined_data = combine_multipacket_data(msg_received)
                 print(f"All Multipacket Data: {combined_data}")
+                end = 1
             else:
                 print(f"Length of RX_BUFFER: {len(RX_BUFFER)}")
                 msg_received.print_processed_pkt()
+        if end:
+            break
     # pulse_pkg.data = bytes([(pulse_pkg.data[0] + 1) % 18, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF])
     # pulse = assemble_frame_from_SCP(rsx_sci_pkt=pulse_pkg)
     # task = BUS.send(pulse)
-    time.sleep(1)
+    # time.sleep(1)
+BUS.shutdown()

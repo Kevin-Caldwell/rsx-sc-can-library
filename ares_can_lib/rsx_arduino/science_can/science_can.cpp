@@ -248,12 +248,9 @@ int process_rx() {
 
   for (int i = 0; i < MAX_RX; ++i) {
     MCP2515::ERROR res = mcp2515.readMessage(&rx_can_frame);
-    Serial.println(res);
     if (res == MCP2515::ERROR_NOMSG || res == MCP2515::ERROR_FAIL) {
       break;
     }
-    Serial.println(res);
-    Serial.println("Entering RX");
 #if defined(DEBUG_MPM)
   Serial.println("PROCESS RX");
 #endif
