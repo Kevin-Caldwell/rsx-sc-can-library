@@ -60,7 +60,7 @@ class ScienceCanPacket:
     peripheral: int = 0
     extra: int = 0
     dlc: int = 0
-    data = [None, None, None, None, None, None, None, None]
+    data: list = []
 
     # Prints the raw values of everything in the Science Can Packet (SCP)
     def print_pkt(self, immediate=True):
