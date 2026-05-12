@@ -1,7 +1,6 @@
 #pragma once
 
 #include <inttypes.h>
-#include <assert.h>
 
 #define WRAP(val) ((val) & (kMask))
 
@@ -47,7 +46,7 @@ public:
 
   inline int elements() const
   {
-    return head_ - tail_ + 1;
+    return head_ - tail_;
   }
 
   inline bool empty() const
@@ -57,7 +56,7 @@ public:
 
   inline bool full() const
   {
-    return head_ - tail_ + 1 >= N;
+    return head_ - tail_ >= N;
   }
 
 private:

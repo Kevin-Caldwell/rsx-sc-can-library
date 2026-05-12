@@ -6,6 +6,32 @@
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 
 namespace Science {
+
+void print_can_message(const ScienceCANMessage& message)
+{
+  Serial.print("Prio: ");
+  Serial.print(message.priority_);
+  Serial.print(", MID: ");
+  Serial.print(message.multipacket_id_);
+  Serial.print(", Sender: ");
+  Serial.print(message.sender_);
+  Serial.print(", Receiver: ");
+  Serial.print(message.receiver_);
+  Serial.print(", Peripheral: ");
+  Serial.print(message.peripheral_);
+  Serial.print(", Extra: ");
+  Serial.print(message.extra_);
+  Serial.print(", DLC: ");
+  Serial.print(message.dlc_);
+  Serial.print(", Data: ");
+  Serial.print(message.data_[0]);
+  for (uint8_t i = 1; i < message.dlc_; ++i) {
+    Serial.print(", ");
+    Serial.print(message.data_[i]);
+  }
+  Serial.println();
+}
+
 namespace MPM {
 
 constexpr int kMaxMultiPacket = 15;
@@ -31,8 +57,8 @@ struct ResourceState {
   uint8_t mapped_index_;
 };
 
-bool run_mpm = false;
-int recv;
+volatile bool run_mpm = false;
+volatile int recv;
 struct ResourceTable {
 public:
   ResourceTable()
@@ -47,9 +73,11 @@ public:
   {
 
     ResourceState* resource = begin_;
-    while (resource->available_ == 1 && resource != end_) {
-      resource++;
+    int cnt = 0;
+    while (arr_[cnt].available_ == 1 && cnt < kMaxStoredPacket) {
+      cnt++;
     }
+    resource = &arr_[cnt];
     resource->available_ = 0;
     resource->base_ = base;
     resource->pos_ = base;
@@ -67,7 +95,7 @@ public:
     while(begin_[cnt].mapped_index_ != frame_index && cnt < kMaxStoredPacket) {
       cnt++;
     }
-    ResourceState* resource = &begin_[cnt];
+    ResourceState* resource = &arr_[cnt];
 
     resource->base_ = nullptr;
     resource->len_ = 0;
@@ -75,7 +103,7 @@ public:
     resource->other_ = kModuleNone;
     resource->peripheral_ = kPeripheralNone;
     resource->available_ = 1;
-    resource->mapped_index_ = -1;
+    resource->mapped_index_ = 0;
     return 0;
   }
 
@@ -98,6 +126,14 @@ public:
 
     const int sent_progress = reinterpret_cast<int>(resource->pos_) - reinterpret_cast<int>(resource->base_);
     const int remaining = resource->len_ - sent_progress;
+
+#if defined(DEBUG_MPM)
+    Serial.print(sent_progress);
+    Serial.print("/");
+    Serial.print(resource->len_);
+    Serial.print(":\t");
+    // print_can_message(message);
+#endif
     message.priority_ = 1;
     message.multipacket_id_ = frame_index;
     message.sender_ = CAN_MODULE;
@@ -114,31 +150,17 @@ public:
       message.extra_ = -1; // Send END signal
       free(frame_index);
       Serial.println("Making Sample Extraction Buffer Available");
-      Science::MPM::sample_extraction_buffer.available = true;
+      // Science::MPM::sample_extraction_buffer.available = true;
       run_mpm = false;
+      Serial.println(run_mpm);
     }
 
 #if defined(DEBUG_MPM)
-    Serial.print(sent_progress);
-    Serial.print("/");
-    Serial.print(resource->len_);
-    Serial.print(":\t");
-    Serial.print("MID:");
-    Serial.print(message.multipacket_id_);
-    Serial.print("S: ");
-    Serial.print(message.sender_);
-    Serial.print("R: ");
-    Serial.print(message.receiver_);
-    Serial.print("P: ");
-    Serial.print(message.peripheral_);
-    Serial.print("DLC: ");
-    Serial.print(message.dlc_);
-    Serial.print("Data: ");
-    for (int i = 0; i < message.dlc_; ++i) {
-      Serial.print(message.data_[i]);
-      Serial.print(",");
-    }
-    Serial.println();
+    // Serial.print(sent_progress);
+    // Serial.print("/");
+    // Serial.print(resource->len_);
+    // Serial.print(":\t");
+    // print_can_message(message);
 #endif
 
     return message;
@@ -152,7 +174,6 @@ public:
     for (int i = 0; i < message.dlc_; ++i) {
       *ptr++ = message.data_[i];
     }
-
   }
 
   void init()
@@ -160,6 +181,17 @@ public:
     for (int i = 0; i < kMaxStoredPacket; ++i) {
       arr_[i].available_ = 1;
     }
+  }
+
+  int GetAvailableSlots()
+  {
+    int available_slots = 0;
+    for (int i = 0; i < kMaxStoredPacket; ++i) {
+      if (arr_[i].available_) {
+        ++available_slots;
+      }
+    }
+    return available_slots;
   }
 
 private:
@@ -171,8 +203,8 @@ private:
 
 static ResourceTable send_table;
 
-bool queue_send = false;
-int frame = -1;
+volatile bool queue_send = false;
+volatile int frame = -1;
 
 }
 
@@ -243,7 +275,7 @@ int process_can() {
 
 int process_rx() {
 
-  int recv = false;
+  int recv = 0;
   struct can_frame rx_can_frame;
 
   for (int i = 0; i < MAX_RX; ++i) {
@@ -251,6 +283,7 @@ int process_rx() {
     if (res == MCP2515::ERROR_NOMSG || res == MCP2515::ERROR_FAIL) {
       break;
     }
+    Serial.println("Received");
 #if defined(DEBUG_MPM)
   Serial.println("PROCESS RX");
 #endif
@@ -271,33 +304,14 @@ int process_rx() {
     parse_can_message(rx_can_frame, &buf);
     if (buf.receiver_ == CAN_MODULE) {
 #if defined(PRINT_FILTERED_CAN)
-      Serial.println("Received CAN message:");
-      Serial.print("Priority: ");
-      Serial.println(buf.priority_, HEX);
-      Serial.print("MCP Index: ");
-      Serial.println(buf.multipacket_id_, HEX);
-      Serial.print("Sender: ");
-      Serial.println(buf.sender_, HEX);
-      Serial.print("Receiver: ");
-      Serial.println(buf.receiver_, HEX);
-      Serial.print("Peripheral: ");
-      Serial.println(buf.peripheral_, HEX);
-      Serial.print("Extra: ");
-      Serial.println(buf.extra_, HEX);
-      Serial.print("DLC: ");
-      Serial.println(buf.dlc_, HEX);
-      Serial.print("Data: ");
-      for (int i = 0; i < buf.dlc_; i++) {
-        Serial.print(buf.data_[i], HEX);
-        Serial.print(", ");
-      }
-      Serial.println("\n End CAN Message.");
+      print_can_message(buf);
+      Serial.println("End CAN Message.");
 #endif
       if (buf.multipacket_id_ == 0) {
         rx_buffer.push(buf);
       } else {
 #if defined(DEBUG_MPM)
-        Serial.println("MCP Request received.");
+        Serial.println("MCP Request received :)");
 #endif
         MPM::queue_send = true;
         MPM::frame = buf.multipacket_id_;
@@ -320,11 +334,12 @@ int process_tx() {
         MPM::sample_extraction_buffer.len_,
         MPM::frame);
       MPM::run_mpm = true;
-      MPM::sample_extraction_buffer.available = false;
 #if defined(DEBUG_MPM)
       Serial.println("Allocated tracker for MCP library.");
 #endif
     }
+    Serial.print(MPM::send_table.GetAvailableSlots());
+    Serial.println(" Slots available in MCP");
   }
   if (MPM::run_mpm) {
     while (!tx_buffer.full()) {
@@ -338,13 +353,15 @@ int process_tx() {
     }
   }
 
+
   int cnt = 0;
   while (!tx_buffer.empty()) {
     const ScienceCANMessage buf = tx_buffer.last();
     struct can_frame tx_frame;
     to_can_frame(&buf, &tx_frame);
     if (~mcp2515.sendMessage(&tx_frame)) {
-      tx_buffer.pop();
+      const ScienceCANMessage tx = tx_buffer.pop();
+      print_can_message(tx);
       cnt++;
     } else {
       break; // Full, try again once later
