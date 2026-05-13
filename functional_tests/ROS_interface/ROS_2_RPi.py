@@ -17,7 +17,7 @@ class ROS_2_RPi_Link(Node):
         super().__init__('ros_receiver')
         self.create_subscription(
             SCP,
-            'SCP', #TODO confirm the topic name
+            'scp_send', #TODO confirm the topic name
             self.ros_receiver_callback,
             10)
         
@@ -29,7 +29,7 @@ class ROS_2_RPi_Link(Node):
         # Add the message into the TX Buffer (Pi system will send it into CAN BUS)
         TX_BUFFER.append(sci_pkt)
 
-if __name__ == "__main__": 
+def main():
     # Instantiate CAN bus
     BUS = initialize_bus()
 
@@ -40,3 +40,5 @@ if __name__ == "__main__":
         process_tx(BUS)
         time.sleep(1)
         
+if __name__ == "__main__": 
+    main()

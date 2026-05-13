@@ -18,27 +18,36 @@ class RPi_2_ROS_Link(Node):
         
         self.publisher = self.create_publisher(
             SCP,
-            "SCP", 
+            "SCP_receive", 
             10
         )
+
+        self.send = True
+        timer_period = 0.5
+        self.timer = self.create_timer(timer_period, self.timer_callback, autostart= True)
+        self.index = 0
         
-    def ros_sender_push(self, msg : SCP):
+    def ros_sender_push(self):
         
         # Fill up ROS topic with info from SCP 
-        return 1 #placeholder
+        for packet in RX_BUFFER:
+            msg = send_ROS_topic()
 
-        # Send msg back to ground station over ROS
+            # Send msg back to ground station over ROS
+            if self.send:
+                self.publisher.publish(msg)
 
-if __name__ == "__main__": 
+def main():
     # Instantiate CAN bus
     BUS = initialize_bus()
 
-    # Create instance of ROS listener 
+    # Create instance of ROS sender 
     sender = RPi_2_ROS_Link()
     
     while (True):
         process_rx(BUS)
-
-        # We need to figure out whether an SCP is supposed to get sent back through ROS or not
+        sender.ros_sender_push()
         time.sleep(1)
         
+if __name__ == "__main__": 
+    main()

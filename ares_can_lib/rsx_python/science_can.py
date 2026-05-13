@@ -16,6 +16,7 @@ import copy
 
 from ares_can_lib.rsx_python.CAN_utilities import *
 import numpy as np
+from science.msg import SCP
 
 # Types of modules
 SCI_MODULE_NONE = 0 # No type
@@ -286,8 +287,8 @@ def process_ROS_topic(ros_topic):
     receiver: final receiving module in CAN
     peripheral: final associated peripheral message is being sent to
     extra: any extra info sent from ground station
-    data_legth: length of data, equivalent to dlc in CAN
-    data_content: actual contents of message being sent, equivalent to CAN data
+    dlc: length of data, equivalent to dlc in CAN
+    data: actual contents of message being sent, equivalent to CAN data
     '''
 
     # Fill with info from ros_topic
@@ -297,15 +298,46 @@ def process_ROS_topic(ros_topic):
         rsx_scp.multipacket_id = assign_available_slot() # Assign next available multipacket ID to request
     else:
         rsx_scp.multipacket_id = 0
-        
+
     rsx_scp.sender = SCI_MODULE_RPI  # Sender will always be RPi, it sends every ros_msg to CAN network
     rsx_scp.receiver = ros_topic.receiver
     rsx_scp.peripheral = ros_topic.peripheral
     rsx_scp.extra = ros_topic.extra
-    rsx_scp.dlc = ros_topic.data_length
-    rsx_scp.data = ros_topic.data_content
+    rsx_scp.dlc = ros_topic.dlc
+    rsx_scp.data = ros_topic.data
 
     return rsx_scp
+
+# Reads from SCP object, fills and returns ROS Topic with information to be sent
+def send_ROS_topic(packet):
+
+    # Initialize an instance of an empty SCP ROS Topic
+    msg = SCP()
+
+    # Process to send for multipacket data 
+    if type(packet) == list:
+        # Fill info with [0]
+        msg.priority = packet[0].priority
+        msg.multipacket_id = packet[0].multipacket_id
+        msg.sender = packet[0].sender 
+        msg.receiver = packet[0].receiver
+        msg.peripheral = packet[0].peripheral
+        msg.extra = packet[0].extra
+        msg.dlc = packet[0].dlc
+        # Combines all data from multipacket 
+        msg.data = combine_multipacket_data(packet)
+
+    # Process to send regular SCP message 
+    msg.priority = packet.priority
+    msg.multipacket_id = packet.multipacket_id
+    msg.sender = packet.sender 
+    msg.receiver = packet.receiver
+    msg.peripheral = packet.peripheral
+    msg.extra = packet.extra
+    msg.dlc = packet.dlc
+    msg.data = packet.data
+
+    return msg
 
 # Sanity function that returns a sample SCP from a string format ROS topic
 def ROS_STR_to_CAN_sanity(ros_str):
